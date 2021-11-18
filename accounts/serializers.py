@@ -19,6 +19,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"password": "Password fields didn't match."})
 
+        if CustomUser.objects.filter(username=attrs['username']).exists():
+            raise serializers.ValidationError(
+                {"username": "User with this username already exists."})
+
+        if CustomUser.objects.filter(email=attrs['email']).exists():
+            raise serializers.ValidationError(
+                {"email": "User with this email already exists."})
+
         return attrs
 
     def create(self, validated_data):
@@ -30,3 +38,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class GetUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ("id", "username", "email")
