@@ -23,11 +23,8 @@ class Bootcamp(models.Model):
     email = models.EmailField(unique=True, blank=True, null=True)
     address = models.CharField(max_length=255)
     careers = models.ManyToManyField(Career, blank=True)
-    average_rating = models.IntegerField(
-        validators=[MaxValueValidator(10), MinValueValidator(1)], blank=True, null=True)
     photo = models.ImageField(upload_to="images/", blank=True, null=True, validators=[
                               FileExtensionValidator(allowed_extensions=['jpg', 'png', 'jpeg'])])
-    # average_cost
     housing = models.BooleanField(default=False)
     job_assistance = models.BooleanField(default=False)
     job_guarantee = models.BooleanField(default=False)

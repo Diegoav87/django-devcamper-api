@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import Bootcamp, Career
 from courses.models import Course
+from accounts.serializers import CustomUserSerializer
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
@@ -39,7 +40,7 @@ class CourseListSerializer(serializers.ModelSerializer):
 
 class BootcampSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     careers = CareerSerializer(read_only=True, many=True)
-    user = serializers.SlugRelatedField(slug_field="username", read_only=True)
+    user = CustomUserSerializer(read_only=True)
     courses = CourseListSerializer(read_only=True, many=True)
 
     class Meta:
@@ -47,7 +48,11 @@ class BootcampSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializ
         fields = '__all__'
 
 
-class BootcampListSerializer(serializers.ModelSerializer):
+class BootcampListSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+    careers = CareerSerializer(read_only=True, many=True)
+    average_cost = serializers.IntegerField()
+    average_rating = serializers.IntegerField()
+
     class Meta:
         model = Bootcamp
-        fields = ('name', 'description')
+        fields = ("name", "careers", "photo", "average_cost", "average_rating")

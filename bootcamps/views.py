@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Avg
 
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -7,7 +8,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.pagination import PageNumberPagination
 
-from .serializers import BootcampSerializer
+from .serializers import BootcampSerializer, BootcampListSerializer
 from .models import Bootcamp, Career
 from .decorators import bootcamp_exists, bootcamp_write_permission
 from .filters import BootcampFilter
@@ -19,7 +20,8 @@ from utils.select import select_fields
 
 @api_view(['GET'])
 def get_bootcamps(request):
-    bootcamps = Bootcamp.objects.all()
+    bootcamps = Bootcamp.objects.annotate(average_cost=Avg(
+        "courses__tuition"), average_rating=Avg("reviews__rating"))
 
     # Filter
     bootcamp_filter = BootcampFilter(request.GET, queryset=bootcamps)
@@ -38,7 +40,7 @@ def get_bootcamps(request):
     # Select
     fields = request.GET.get('fields', '')
 
-    serializer = select_fields(BootcampSerializer, bootcamps, fields)
+    serializer = select_fields(BootcampListSerializer, bootcamps, fields)
 
     return paginator.get_paginated_response(serializer.data)
 
