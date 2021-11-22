@@ -48,7 +48,8 @@ def get_bootcamps(request):
 @api_view(['GET'])
 @bootcamp_exists
 def get_bootcamp(request, pk):
-    bootcamp = Bootcamp.objects.get(id=pk)
+    bootcamp = Bootcamp.objects.annotate(average_cost=Avg(
+        "courses__tuition"), average_rating=Avg("reviews__rating")).get(id=pk)
     serializer = BootcampSerializer(bootcamp)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

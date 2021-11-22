@@ -35,13 +35,16 @@ class CareerSerializer(serializers.ModelSerializer):
 class CourseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ('title', 'description', 'weeks')
+        fields = ('title', 'description', 'weeks',
+                  "minimum_skill", "scolarship_available", "tuition")
 
 
 class BootcampSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     careers = CareerSerializer(read_only=True, many=True)
     user = CustomUserSerializer(read_only=True)
     courses = CourseListSerializer(read_only=True, many=True)
+    average_cost = serializers.IntegerField()
+    average_rating = serializers.IntegerField()
 
     class Meta:
         model = Bootcamp
@@ -55,4 +58,5 @@ class BootcampListSerializer(DynamicFieldsModelSerializer, serializers.ModelSeri
 
     class Meta:
         model = Bootcamp
-        fields = ("name", "careers", "photo", "average_cost", "average_rating")
+        fields = ("id", "name", "careers", "photo",
+                  "average_cost", "average_rating")
