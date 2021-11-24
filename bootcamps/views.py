@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Avg
 
 from rest_framework.decorators import api_view, parser_classes, permission_classes
@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.pagination import PageNumberPagination
 
-from .serializers import BootcampSerializer, BootcampListSerializer
+from .serializers import BootcampSerializer, BootcampListSerializer, BootcampCreateSerializer
 from .models import Bootcamp, Career
 from .decorators import bootcamp_exists, bootcamp_write_permission
 from .filters import BootcampFilter
@@ -54,10 +54,22 @@ def get_bootcamp(request, pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def get_bootcamp_for_user(request):
+    try:
+        bootcamp = Bootcamp.objects.annotate(average_cost=Avg(
+            "courses__tuition"), average_rating=Avg("reviews__rating")).get(user=request.user)
+    except Bootcamp.DoesNotExist:
+        return Response("Bootcamp for user does not exist", status=status.HTTP_404_NOT_FOUND)
+
+    serializer = BootcampSerializer(bootcamp)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def create_bootcamp(request):
-    serializer = BootcampSerializer(data=request.data)
+    serializer = BootcampCreateSerializer(data=request.data)
 
     if serializer.is_valid():
         bootcamp = serializer.save(user=request.user)
@@ -79,11 +91,20 @@ def create_bootcamp(request):
 @bootcamp_write_permission
 def update_bootcamp(request, pk):
     bootcamp = Bootcamp.objects.get(id=pk)
-    serializer = BootcampSerializer(
+    serializer = BootcampCreateSerializer(
         instance=bootcamp, data=request.data, partial=True)
 
     if serializer.is_valid():
-        serializer.save()
+        bootcamp = serializer.save()
+        careers = request.data.get('careers', '')
+
+        if careers != '':
+            bootcamp.careers.clear()
+
+            for career in careers:
+                career_obj = Career.objects.get(name=career)
+                bootcamp.careers.add(career_obj)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

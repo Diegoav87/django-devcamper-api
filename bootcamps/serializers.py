@@ -60,3 +60,9 @@ class BootcampListSerializer(DynamicFieldsModelSerializer, serializers.ModelSeri
         model = Bootcamp
         fields = ("id", "name", "careers", "photo",
                   "average_cost", "average_rating")
+
+
+class BootcampCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bootcamp
+        exclude = ("careers",)

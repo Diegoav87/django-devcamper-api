@@ -7,9 +7,9 @@ def bootcamp_exists(view_func):
     def wrapper_func(request, *args, **kwargs):
         pk = kwargs.get('pk')
         try:
-            bootcamp = Bootcamp.objects.get(id=pk)
+            bootcamp = Bootcamp.objects.get(id=int(pk))
             return view_func(request, *args, **kwargs)
-        except:
+        except Bootcamp.DoesNotExist:
             return Response(f"Bootcamp with ID of {pk} does not exist", status=status.HTTP_404_NOT_FOUND)
     return wrapper_func
 

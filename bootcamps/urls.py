@@ -7,6 +7,8 @@ urlpatterns = [
     path('', views.get_bootcamps, name="get-bootcamps"),
     path('create-bootcamp/', views.create_bootcamp, name="create-bootcamp"),
     path('get-bootcamp/<str:pk>/', views.get_bootcamp, name="get-bootcamp"),
+    path('get-bootcamp-for-user/',
+         views.get_bootcamp_for_user, name="get-bootcamp-for-user"),
     path('update-bootcamp/<str:pk>/',
          views.update_bootcamp, name="update-bootcamp"),
     path('delete-bootcamp/<str:pk>/',
