@@ -10,7 +10,7 @@ def course_exists(view_func):
         try:
             course = Course.objects.get(id=pk)
             return view_func(request, *args, **kwargs)
-        except:
+        except Course.DoesNotExist:
             return Response(f"Course with ID of {pk} does not exist", status=status.HTTP_404_NOT_FOUND)
     return wrapper_func
 

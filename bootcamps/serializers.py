@@ -35,7 +35,7 @@ class CareerSerializer(serializers.ModelSerializer):
 class CourseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ('title', 'description', 'weeks',
+        fields = ("id", 'title', 'description', 'weeks',
                   "minimum_skill", "scolarship_available", "tuition")
 
 
@@ -66,3 +66,9 @@ class BootcampCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bootcamp
         exclude = ("careers",)
+
+
+class BootcampSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bootcamp
+        fields = "__all__"
