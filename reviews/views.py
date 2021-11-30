@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import ReviewSerializer
+from .serializers import ReviewCreateSerializer, ReviewGetSerializer
 from .models import Review
 from bootcamps.models import Bootcamp
 from bootcamps.decorators import bootcamp_exists
@@ -18,7 +18,22 @@ from .decorators import review_exists, review_write_permission
 @bootcamp_exists
 def get_bootcamp_reviews(request, pk):
     bootcamp = Bootcamp.objects.get(id=pk)
-    serializer = ReviewSerializer(bootcamp.reviews, many=True)
+    serializer = ReviewGetSerializer(bootcamp.reviews, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@review_exists
+def get_review(request, pk):
+    review = Review.objects.get(id=pk)
+    serializer = ReviewGetSerializer(review)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_reviews_for_user(request):
+    reviews = Review.objects.filter(user=request.user)
+    serializer = ReviewGetSerializer(reviews, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -27,7 +42,7 @@ def get_bootcamp_reviews(request, pk):
 @bootcamp_exists
 def add_review(request, pk):
     bootcamp = Bootcamp.objects.get(id=pk)
-    serializer = ReviewSerializer(data=request.data)
+    serializer = ReviewCreateSerializer(data=request.data)
 
     if serializer.is_valid():
         serializer.save(user=request.user, bootcamp=bootcamp)
@@ -41,7 +56,7 @@ def add_review(request, pk):
 @review_write_permission
 def update_review(request, pk):
     review = Review.objects.get(id=pk)
-    serializer = ReviewSerializer(
+    serializer = ReviewCreateSerializer(
         instance=review, data=request.data, partial=True)
 
     if serializer.is_valid():

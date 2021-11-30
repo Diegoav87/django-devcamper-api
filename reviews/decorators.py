@@ -9,7 +9,7 @@ def review_exists(view_func):
         try:
             review = Review.objects.get(id=pk)
             return view_func(request, *args, **kwargs)
-        except:
+        except Review.DoesNotExist:
             return Response(f"Review with ID of {pk} does not exist", status=status.HTTP_404_NOT_FOUND)
     return wrapper_func
 
