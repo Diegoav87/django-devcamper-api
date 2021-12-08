@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import generics
 
-from .serializers import CustomUserSerializer, GetUserSerializer
+from .serializers import CustomUserSerializer, GetUserSerializer, UserEditSerializer, UpdatePasswordSerializer
+from accounts.models import CustomUser
 
 
 # Create your views here.
@@ -32,6 +34,18 @@ def get_user(request):
     return Response({"user": serializer.data})
 
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_user(request):
+    serializer = UserEditSerializer(
+        instance=request.user, data=request.data, partial=True, context={"request": request})
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class BlacklistTokenUpdateView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = ()
@@ -44,3 +58,9 @@ class BlacklistTokenUpdateView(APIView):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (IsAuthenticated, )
+    serializer_class = UpdatePasswordSerializer
