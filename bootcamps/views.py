@@ -1,12 +1,16 @@
+import logging
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Avg
+from django.contrib.gis.geos import Point, point
+from django.contrib.gis.measure import Distance
 
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.pagination import PageNumberPagination
+from geopy.geocoders import Nominatim
 
 from .serializers import BootcampSerializer, BootcampListSerializer, BootcampCreateSerializer
 from .models import Bootcamp, Career
@@ -17,15 +21,31 @@ from utils.select import select_fields
 
 # Create your views here.
 
+geolocator = Nominatim(user_agent="geopiExercises")
+
 
 @api_view(['GET'])
 def get_bootcamps(request):
     bootcamps = Bootcamp.objects.annotate(average_cost=Avg(
         "courses__tuition"), average_rating=Avg("reviews__rating"))
 
+    average_rating = request.GET.get("average_rating", "")
+    average_cost = request.GET.get("average_cost", "")
+    career = request.GET.get("career", "")
+
     # Filter
     bootcamp_filter = BootcampFilter(request.GET, queryset=bootcamps)
     bootcamps = bootcamp_filter.qs
+
+    if average_rating != "":
+        bootcamps = bootcamps.filter(average_rating__gte=int(average_rating))
+
+    if average_cost != "":
+        bootcamps = bootcamps.filter(average_cost__lte=int(average_cost))
+
+    if career != "":
+        career = Career.objects.get(name=career)
+        bootcamps = bootcamps.filter(careers__in=[career.id])
 
     # Sort
     sort = request.GET.get('sort', '')
@@ -34,7 +54,7 @@ def get_bootcamps(request):
 
     # Pagination
     paginator = PageNumberPagination()
-    paginator.page_size = 10
+    paginator.page_size = 5
     bootcamps = paginator.paginate_queryset(bootcamps, request)
 
     # Select
@@ -43,6 +63,14 @@ def get_bootcamps(request):
     serializer = select_fields(BootcampListSerializer, bootcamps, fields)
 
     return paginator.get_paginated_response(serializer.data)
+
+
+@api_view(["GET"])
+def get_latest_bootcamps(request):
+    bootcamps = Bootcamp.objects.annotate(average_cost=Avg(
+        "courses__tuition"), average_rating=Avg("reviews__rating")).order_by('-created_at')[:3]
+    serializer = BootcampListSerializer(bootcamps, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -72,7 +100,18 @@ def create_bootcamp(request):
     serializer = BootcampCreateSerializer(data=request.data)
 
     if serializer.is_valid():
-        bootcamp = serializer.save(user=request.user)
+        address = serializer.validated_data['address']
+        bootcamp_geolocation = geolocator.geocode(address)
+
+        if bootcamp_geolocation == None:
+            return Response("Please enter a valid address", status=status.HTTP_400_BAD_REQUEST)
+
+        lat = bootcamp_geolocation.latitude
+        lng = bootcamp_geolocation.longitude
+        print(lat, lng)
+        pnt = Point(lng, lat, srid=4326)
+
+        bootcamp = serializer.save(user=request.user, location=pnt)
 
         careers = request.data.get('careers', '')
 
@@ -134,3 +173,20 @@ def upload_photo(request, pk):
     bootcamp.photo = image
     bootcamp.save()
     return Response("Your image was uploaded", status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_bootcamps_within_radius(request, km, zipcode):
+    location = geolocator.geocode(zipcode)
+
+    if location == None:
+        return Response("There were no results for your zipcode", status=status.HTTP_400_BAD_REQUEST)
+
+    point = Point(location.longitude, location.latitude, srid=4326)
+
+    bootcamps = Bootcamp.objects.annotate(average_cost=Avg(
+        "courses__tuition"), average_rating=Avg("reviews__rating")).filter(
+        location__distance_lt=(point, Distance(km=km)))
+    serializer = BootcampListSerializer(bootcamps, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
