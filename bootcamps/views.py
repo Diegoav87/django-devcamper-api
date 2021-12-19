@@ -18,6 +18,7 @@ from .decorators import bootcamp_exists, bootcamp_write_permission
 from .filters import BootcampFilter
 from utils.sort import sort_queryset
 from utils.select import select_fields
+from utils.geolocation import geolocate
 
 # Create your views here.
 
@@ -101,17 +102,12 @@ def create_bootcamp(request):
 
     if serializer.is_valid():
         address = serializer.validated_data['address']
-        bootcamp_geolocation = geolocator.geocode(address)
+        point = geolocate(address)
 
-        if bootcamp_geolocation == None:
+        if point == None:
             return Response("Please enter a valid address", status=status.HTTP_400_BAD_REQUEST)
 
-        lat = bootcamp_geolocation.latitude
-        lng = bootcamp_geolocation.longitude
-        print(lat, lng)
-        pnt = Point(lng, lat, srid=4326)
-
-        bootcamp = serializer.save(user=request.user, location=pnt)
+        bootcamp = serializer.save(user=request.user, location=point)
 
         careers = request.data.get('careers', '')
 
@@ -134,7 +130,21 @@ def update_bootcamp(request, pk):
         instance=bootcamp, data=request.data, partial=True)
 
     if serializer.is_valid():
-        bootcamp = serializer.save()
+        address = serializer.validated_data['address']
+        point = ''
+
+        if address != bootcamp.address:
+            point = geolocate(address)
+
+            if point == None:
+                return Response("Please enter a valid address", status=status.HTTP_400_BAD_REQUEST)
+
+        bootcamp = ''
+        if point != "":
+            bootcamp = serializer.save(location=point)
+        else:
+            bootcamp = serializer.save()
+
         careers = request.data.get('careers', '')
 
         if careers != '':

@@ -1,0 +1,1 @@
+web: gunicorn devcamper.wsgi --log-file -

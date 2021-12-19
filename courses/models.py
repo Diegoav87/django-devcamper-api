@@ -17,7 +17,7 @@ class Course(models.Model):
         Bootcamp, on_delete=models.CASCADE, related_name="courses")
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=500)
-    weeks = models.CharField(max_length=255)
+    weeks = models.IntegerField()
     tuition = models.IntegerField()
     minimum_skill = models.CharField(max_length=255, choices=SKILL)
     scolarship_available = models.BooleanField(default=False)
