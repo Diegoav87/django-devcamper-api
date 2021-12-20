@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
+from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -28,7 +30,11 @@ urlpatterns = [
     path('api/v1/accounts/', include('accounts.urls')),
     path('api/v1/token/', TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/v1/auth/', include("djoser.urls"))
+    path('api/v1/auth/', include("djoser.urls")),
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url=staticfiles_storage.url("favicon.ico")),
+    ),
 ]
 
 if settings.DEBUG:
