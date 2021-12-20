@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator, FileExtensionValidator
-from django.contrib.gis.db.models import PointField
 
 from accounts.models import CustomUser
 # Create your models here.
@@ -23,7 +22,6 @@ class Bootcamp(models.Model):
         '^\+?1?\d{9,15}$', message="The phone number should be in format: '+999999999'. Up to 15 digits allowed")], blank=True, null=True, max_length=20)
     email = models.EmailField(unique=True, blank=True, null=True)
     address = models.CharField(max_length=255)
-    location = PointField(null=True)
     careers = models.ManyToManyField(Career, blank=True)
     photo = models.ImageField(upload_to="images/", blank=True, null=True, validators=[
                               FileExtensionValidator(allowed_extensions=['jpg', 'png', 'jpeg'])])
@@ -32,6 +30,8 @@ class Bootcamp(models.Model):
     job_guarantee = models.BooleanField(default=False)
     accept_gi = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    lng = models.DecimalField(max_digits=8, decimal_places=6, null=True)
+    lat = models.DecimalField(max_digits=8, decimal_places=6, null=True)
 
     def __str__(self):
         return self.name

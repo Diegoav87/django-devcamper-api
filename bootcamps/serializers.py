@@ -65,7 +65,7 @@ class BootcampListSerializer(DynamicFieldsModelSerializer, serializers.ModelSeri
 class BootcampCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bootcamp
-        exclude = ("careers", "location")
+        exclude = ("careers", "lng", "lat")
 
 
 class BootcampSimpleSerializer(serializers.ModelSerializer):

@@ -1,8 +1,5 @@
-import logging
 from django.shortcuts import render, get_object_or_404
 from django.db.models import Avg
-from django.contrib.gis.geos import Point, point
-from django.contrib.gis.measure import Distance
 
 from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +15,7 @@ from .decorators import bootcamp_exists, bootcamp_write_permission
 from .filters import BootcampFilter
 from utils.sort import sort_queryset
 from utils.select import select_fields
-from utils.geolocation import geolocate
+from utils.geolocation import geolocate, haversine, calculate_distance
 
 # Create your views here.
 
@@ -107,7 +104,8 @@ def create_bootcamp(request):
         if point == None:
             return Response("Please enter a valid address", status=status.HTTP_400_BAD_REQUEST)
 
-        bootcamp = serializer.save(user=request.user, location=point)
+        bootcamp = serializer.save(
+            user=request.user, lng=point[0], lat=point[1])
 
         careers = request.data.get('careers', '')
 
@@ -141,7 +139,7 @@ def update_bootcamp(request, pk):
 
         bootcamp = ''
         if point != "":
-            bootcamp = serializer.save(location=point)
+            bootcamp = serializer.save(lng=point[0], lat=point[1])
         else:
             bootcamp = serializer.save()
 
@@ -192,11 +190,19 @@ def get_bootcamps_within_radius(request, km, zipcode):
     if location == None:
         return Response("There were no results for your zipcode", status=status.HTTP_400_BAD_REQUEST)
 
-    point = Point(location.longitude, location.latitude, srid=4326)
+    center_point = (location.latitude, location.longitude)
+
+    bootcamps = Bootcamp.objects.all()
+
+    in_radius_bootcamps = []
+
+    for bootcamp in bootcamps:
+        test_point = (bootcamp.lat, bootcamp.lng)
+        if calculate_distance(center_point, test_point, km):
+            in_radius_bootcamps.append(bootcamp.name)
 
     bootcamps = Bootcamp.objects.annotate(average_cost=Avg(
-        "courses__tuition"), average_rating=Avg("reviews__rating")).filter(
-        location__distance_lt=(point, Distance(km=km)))
+        "courses__tuition"), average_rating=Avg("reviews__rating")).filter(name__in=in_radius_bootcamps)
     serializer = BootcampListSerializer(bootcamps, many=True)
 
     return Response(serializer.data, status=status.HTTP_200_OK)

@@ -32,9 +32,6 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = ['127.0.0.1', 'devcamper-django.herokuapp.com']
 
-GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
-GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
-
 
 # Application definition
 
@@ -54,7 +51,6 @@ INSTALLED_APPS = [
     'corsheaders',
     "rest_framework_simplejwt.token_blacklist",
     "djoser",
-    'django.contrib.gis',
     'storages'
 ]
 
@@ -95,7 +91,7 @@ WSGI_APPLICATION = 'devcamper.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': "django.contrib.gis.db.backends.postgis",
+        'ENGINE': "django.db.backends.postgresql",
         'NAME': os.environ.get("DB_NAME"),
         'USER': os.environ.get("DB_USER"),
         'PASSWORD': os.environ.get("DB_PASSWORD"),
