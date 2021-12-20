@@ -32,19 +32,8 @@ DEBUG = os.environ.get("DEBUG")
 
 ALLOWED_HOSTS = ['127.0.0.1', 'devcamper-django.herokuapp.com']
 
-GEOS_LIBRARY_PATH = '/app/.heroku/vendor/lib/libgeos_c.so' if os.environ.get(
-    'ENV') == 'HEROKU' else os.getenv('GEOS_LIBRARY_PATH')
-GDAL_LIBRARY_PATH = '/app/.heroku/vendor/lib/libgdal.so' if os.environ.get(
-    'ENV') == 'HEROKU' else os.getenv('GDAL_LIBRARY_PATH')
-
-# if os.name == 'nt':
-#     import platform
-#     OSGEO4W = r"C:\OSGeo4W"
-#     assert os.path.isdir(OSGEO4W), "Directory does not exist: " + OSGEO4W
-#     os.environ['OSGEO4W_ROOT'] = OSGEO4W
-#     os.environ['GDAL_DATA'] = OSGEO4W + r"\share\gdal"
-#     os.environ['PROJ_LIB'] = OSGEO4W + r"\share\proj"
-#     os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
 
 
 # Application definition
