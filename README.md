@@ -7,3 +7,5 @@ The backend of this application is made in Django and the API was created using 
 ## Frontend
 The frontend of this application is made in React. Axios was used to handle all the requests and responses, the entire state is handled through hooks. The frontend code is in the following repository.
 [See the frontend repo](https://github.com/Diegoav87/react-devcamper-api)
+
+[Live website](https://devcamper-django.netlify.app/)
