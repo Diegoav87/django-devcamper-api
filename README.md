@@ -1,10 +1,9 @@
 # Devcamper Django y React
-
-Devcamper es una aplicación web donde puedes encontrar bootcamps cerca de tu área. También puedes registrar tu propio bootcamp con todos sus cursos, o escribir reseñas para los bootcamps existentes. Esta aplicación se basa en el curso de desarrollo de APIs con Node de Brad Traversy, pero le di un giro y la implementé en Django y React.
+Devcamper is a web application where you can find bootcamps near your area. You can also register your own bootcamp with all its courses, or write reviews for existing bootcamps. This app is based on Brad Traversy's API development course with Node, but I gave it a twist and implemented it in Django and React.
 
 ## Backend
-El backend de esta aplicación está hecha en Django y la API se creo usando el Django Rest Framework. Para toda la parte de autenticación de usuarios se usaron las librerías de Simple JWT y Djoser, y para la geolocalización se utilizó Geopy.
+The backend of this application is made in Django and the API was created using the Django Rest Framework. The Simple JWT and Djoser libraries were used for the entire user authentication part, and Geopy was used for geolocation.
 
 ## Frontend
-El frontend de esta aplicación está hecho en React. Se utilizó axios para manejar todas las requests y responses, todo el estado es manejado por medio de hooks. El código del frontend se encuentra en el siguiente repositorio.
-https://github.com/Diegoav87/react-devcamper-api
+The frontend of this application is made in React. Axios was used to handle all the requests and responses, the entire state is handled through hooks. The frontend code is in the following repository.
+[See the frontend repo](https://github.com/Diegoav87/react-devcamper-api)
